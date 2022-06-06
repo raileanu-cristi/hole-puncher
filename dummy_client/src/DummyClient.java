@@ -39,6 +39,7 @@ public class DummyClient {
     private static void test1(DatagramSocket socket,InetAddress address, int port) throws IOException, InterruptedException, UnknownHostException, SecurityException  {
         sendMessage("REGISTER", socket, address, port);
         String dataStr = receiveMessage(socket);
+        System.out.println(dataStr);
         TimeUnit.SECONDS.sleep(2);
         while (true) {
             sendMessage("POLL", socket, address, port);
@@ -59,6 +60,8 @@ public class DummyClient {
                     e.printStackTrace();
                 }
             });
+            sendMessage("ACK_POLL "+addresses.stream().map(InetAddress::toString).reduce("", String::concat), socket, address, port);
+            System.out.println("ACK_POLL sent");
             TimeUnit.SECONDS.sleep(2);
         }
     }

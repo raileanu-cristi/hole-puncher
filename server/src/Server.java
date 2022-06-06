@@ -19,6 +19,7 @@ public class Server extends DatagramServerThread implements ISendPacketToPeer {
                 byte[] buffer = new byte[BUFFER_LEN];
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 socket.receive(request);
+                System.out.println("[Server] message received!");
                 peerMessageAnalyzer.addMessage(request);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -31,6 +32,7 @@ public class Server extends DatagramServerThread implements ISendPacketToPeer {
     public void sendPacketToPeer(DatagramPacket packet) {
         try {
             socket.send(packet);
+            System.out.println("[Server] message sent "+packet.getData());
         } catch (IOException e) {
             e.printStackTrace();
         }

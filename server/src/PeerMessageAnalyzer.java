@@ -55,6 +55,7 @@ public class PeerMessageAnalyzer extends Thread {
             switch (firstWord) {
                 case "REGISTER": {
                     peerRepository.register(clientAddress);
+                    System.out.println("peer registered with ip "+clientAddress.toString());
                     sendMessageToClient("ACK_REGISTER", clientAddress, clientPort);
                     break;
                 }
