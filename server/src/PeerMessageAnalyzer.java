@@ -43,6 +43,7 @@ public class PeerMessageAnalyzer extends Thread {
     }
 
     private void processMessage(DatagramPacket packet) {
+        System.out.println("[PeerMessageAnalyzer] processMessage");
         if (packet == null) {
             return;
         }
@@ -51,11 +52,12 @@ public class PeerMessageAnalyzer extends Thread {
         final String message = packet.getData().toString();
         final String[] words = message.split(" ");
         final String firstWord = words.length > 0 ? words[0] : null;
+        System.out.println("[PeerMessageAnalyzer] firstWord=<"+firstWord+">");
         try {
             switch (firstWord) {
                 case "REGISTER": {
                     peerRepository.register(clientAddress);
-                    System.out.println("peer registered with ip "+clientAddress.toString());
+                    System.out.println("[PeerMessageAnalyzer] peer registered with ip "+clientAddress.toString());
                     sendMessageToClient("ACK_REGISTER", clientAddress, clientPort);
                     break;
                 }
@@ -66,6 +68,7 @@ public class PeerMessageAnalyzer extends Thread {
                     break;
                 }
                 case "POLL": {
+                    System.out.println("[PeerMessageAnalyzer] POLL");
                     final List<InetAddress> connectionRequests = peerRepository.getConnectionRequests(clientAddress);
                     peerRepository.removeConnectionRequests(clientAddress);
                     sendMessageToClient(connectionRequests.stream().map(InetAddress::toString).reduce("", String::concat), clientAddress, clientPort);
