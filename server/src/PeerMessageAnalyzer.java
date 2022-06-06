@@ -1,6 +1,7 @@
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -49,7 +50,7 @@ public class PeerMessageAnalyzer extends Thread {
         }
         final InetAddress clientAddress = packet.getAddress();
         final int clientPort = packet.getPort();
-        final String message = packet.getData().toString();
+        final String message = new String(packet.getData(), StandardCharsets.UTF_8);
         final String[] words = message.split(" ");
         final String firstWord = words.length > 0 ? words[0] : null;
         System.out.println("[PeerMessageAnalyzer] firstWord=<"+firstWord+">");
