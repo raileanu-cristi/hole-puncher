@@ -12,7 +12,7 @@ public class HolePuncher {
         int port = Integer.parseInt(args[0]);
 
         try {
-            Server server = new Server(port);
+            final Server server = new Server(port);
             server.start();
         } catch (SocketException e) {
             e.printStackTrace();

@@ -4,18 +4,18 @@ import java.util.ArrayList;
 
 public class Peer {
     private PeerStatus peerStatus;
-    private List<InetAddress> connectionRequests;
+    private final List<InetAddress> connectionRequests;
 
     public Peer(PeerStatus peerStatus) {
         this.peerStatus = peerStatus;
-        this.connectionRequests = new ArrayList<InetAddress>();
+        this.connectionRequests = new ArrayList<>();
     }
 
     public PeerStatus getPeerStatus() {
         return peerStatus;
     }
 
-    public void setPeerStatus(PeerStatus status) {
+    public void setPeerStatus(final PeerStatus status) {
         this.peerStatus = status;
     }
 
@@ -23,7 +23,7 @@ public class Peer {
         return connectionRequests;
     }
 
-    public void addConnectionRequest(InetAddress address) {
+    public void addConnectionRequest(final InetAddress address) {
         connectionRequests.add(address);
     }
 
