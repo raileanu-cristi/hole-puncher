@@ -12,7 +12,10 @@ public class PeerMessageHelper {
     private PeerMessageHelper() {}
 
     public static String[] getNonEmptyWords(final String message) {
-        return Arrays.stream(message.split(" ")).filter(word -> !word.isEmpty()).toArray(String[]::new);
+        return Arrays.stream(message.trim().split(" "))
+                .map(String::trim)
+                .filter(word -> !word.isEmpty())
+                .toArray(String[]::new);
     }
 
     public static String mapAddressesToString(final List<InetAddress> connectionRequests) {
