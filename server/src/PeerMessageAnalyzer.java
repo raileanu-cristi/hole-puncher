@@ -17,6 +17,7 @@ public class PeerMessageAnalyzer extends Thread {
     private final PeerRepository peerRepository;
     private boolean isRunning;
     private final ISendPacketToPeer peerSender;
+    private static final  String REGISTER_MSG = "REGISTER";
 
     public PeerMessageAnalyzer(ISendPacketToPeer peerSender) {
         isRunning = true;
@@ -50,38 +51,37 @@ public class PeerMessageAnalyzer extends Thread {
         final int clientPort = packet.getPort();
         final String message = new String(packet.getData(), StandardCharsets.UTF_8);
         final String[] words = message.split(" ");
-        final String firstWord = words.length > 0 ? words[0] : null;
-        if (firstWord != null) {
-            System.out.println("[PeerMessageAnalyzer] firstWord: "+firstWord);
-        } else {
+        final String firstWord = words.length > 0 ? words[0].trim() : null;
+        if (firstWord == null) {
             System.out.println("[PeerMessageAnalyzer] Error: no words in the message!");
             return;
         }
 
         try {
             switch (firstWord) {
-                case "REGISTER" -> {
+                case REGISTER_MSG -> {
                     peerRepository.register(clientAddress);
-                    System.out.println("[PeerMessageAnalyzer] peer registered with ip " + clientAddress.toString());
+                    System.out.println("[PeerMessageAnalyzer] REGISTER peer registered with ip " + clientAddress.toString());
                     sendMessageToClient("ACK_REGISTER", clientAddress, clientPort);
                 }
                 case "CONNECT" -> {
+                    System.out.println("[PeerMessageAnalyzer] CONNECT ");
                     if (words.length > 1) {
-                        peerRepository.addConnectionRequest(clientAddress, InetAddress.getByName(words[1]));
+                        peerRepository.addConnectionRequest(clientAddress, InetAddress.getByName(words[1].trim()));
                     }
                 }
                 case "POLL" -> {
                     System.out.println("[PeerMessageAnalyzer] POLL");
                     final List<InetAddress> connectionRequests = peerRepository.getConnectionRequests(clientAddress);
                     peerRepository.removeConnectionRequests(clientAddress);
-                    sendMessageToClient(connectionRequests.stream().map(InetAddress::toString).reduce("", String::concat), clientAddress, clientPort);
+                    final String responsePoll = "POLL_RESPONSE " + connectionRequests.stream().map(inet -> inet.toString() + " ").reduce("", String::concat).trim();
+                    sendMessageToClient(responsePoll, clientAddress, clientPort);
                 }
                 case "ACK_POLL" -> {
+                    System.out.println("[PeerMessageAnalyzer] ACK_POLL ");
                     for (int i = 1; i < words.length; i++) {
                         sendMessageToClient("ACK" + " " + clientAddress.toString(), InetAddress.getByName(words[i]), clientPort);
                     }
-                }
-                default -> {
                 }
             }
         } catch (UnknownHostException e) {
@@ -90,6 +90,7 @@ public class PeerMessageAnalyzer extends Thread {
     }
 
     private void sendMessageToClient(final String message, final InetAddress address, final int port) {
+        System.out.println("[PeerMessageAnalyzer] sent message \""+message + "\" to " + address.toString() + ":" + port);
         final DatagramPacket packetToClient = new DatagramPacket(message.getBytes(), message.length());
         packetToClient.setAddress(address);
         packetToClient.setPort(port);
