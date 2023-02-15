@@ -50,7 +50,7 @@ public class PeerMessageAnalyzer extends Thread {
         final InetAddress clientAddress = packet.getAddress();
         final int clientPort = packet.getPort();
         final String message = new String(packet.getData(), StandardCharsets.UTF_8);
-        final String[] words = message.split(" ");
+        final String[] words = PeerMessageHelper.getNonEmptyWords(message);
         final String firstWord = words.length > 0 ? words[0].trim() : null;
         if (firstWord == null) {
             System.out.println("[PeerMessageAnalyzer] Error: no words in the message!");
@@ -74,7 +74,7 @@ public class PeerMessageAnalyzer extends Thread {
                     System.out.println("[PeerMessageAnalyzer] POLL");
                     final List<InetAddress> connectionRequests = peerRepository.getConnectionRequests(clientAddress);
                     peerRepository.removeConnectionRequests(clientAddress);
-                    final String responsePoll = "POLL_RESPONSE " + connectionRequests.stream().map(inet -> inet.toString() + " ").reduce("", String::concat).trim();
+                    final String responsePoll = "POLL_RESPONSE " + PeerMessageHelper.mapAddressesToString(connectionRequests);
                     sendMessageToClient(responsePoll, clientAddress, clientPort);
                 }
                 case "ACK_POLL" -> {
