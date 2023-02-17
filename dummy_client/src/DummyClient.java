@@ -14,19 +14,22 @@ public class DummyClient {
             return;
         }
  
-        String hostname = args[0];
-        final int port = Integer.parseInt(args[1]);
-        String targetHostname = args[2];
-        final int id = Integer.parseInt(args[3]);
+        final String hostname = args[0];
+        final int clientPort = Integer.parseInt(args[1]);
+        final int serverPort = Integer.parseInt(args[2]);
+        final String targetHostname = args[3];
+        final int id = Integer.parseInt(args[4]);
 
         try {
             final InetAddress address = InetAddress.getByName(hostname);
-            final DatagramSocket socket = new DatagramSocket(port);
-            final InetAddress targeAddress = InetAddress.getByName(targetHostname);
-            if (id ==1) {
-                test1(socket, address, port);
-            } else if (id ==2) {
-                test2(socket, address, port, targeAddress);
+            final DatagramSocket socket = new DatagramSocket(clientPort);
+            final InetAddress targetAddress = InetAddress.getByName(targetHostname);
+            if (id == 1) {
+                test1(socket, address, serverPort);
+            } else if (id == 2) {
+                test2(socket, address, serverPort, targetAddress);
+            } else if (id == 3) {
+                test3(socket, address, serverPort);
             }
         } catch (Exception ex) {
             System.out.println("Timeout error: " + ex.getMessage());
@@ -38,7 +41,7 @@ public class DummyClient {
         final String dataStr = registerHost(socket, address, port);
         System.out.println(dataStr);
         TimeUnit.SECONDS.sleep(2);
-        while (true) {
+        for (int i=0; i<2; i++) {
             final List<InetAddress> addresses = pollServer(socket, address, port);
 
             addresses.forEach(addr -> {
@@ -48,7 +51,7 @@ public class DummyClient {
                     e.printStackTrace();
                 }
             });
-            sendMessage("ACK_POLL "+addresses.stream().map(InetAddress::toString).reduce("", String::concat), socket, address, port);
+            sendMessage("ACK_POLL "+mapAddressesToString(addresses), socket, address, port);
             System.out.println("ACK_POLL sent");
             TimeUnit.SECONDS.sleep(2);
         }
@@ -60,10 +63,20 @@ public class DummyClient {
         System.out.println(response);
     }
 
+    private static void test3(final DatagramSocket socket, final InetAddress address, final int port) throws IOException, InterruptedException {
+        while (true) {
+            sendMessage("CONNECT", socket, address, port);
+
+            TimeUnit.SECONDS.sleep(2);
+        }
+    }
+
     private static List<InetAddress> pollServer(final DatagramSocket socket, final InetAddress address, final int port) throws IOException {
         sendMessage("POLL", socket, address, port);
         final String pollResponse = receiveMessage(socket);
-        final List<String> addresStr = Arrays.asList(pollResponse.split(" ")).subList(1, 10);
+        System.out.println("POLL response= "+pollResponse);
+        final String[] responseSplit = pollResponse.split(" ");
+        final List<String> addresStr = Arrays.asList(responseSplit).subList(1, responseSplit.length);
         return addresStr
                 .stream()
                 .map(word -> {
@@ -90,5 +103,9 @@ public class DummyClient {
         final DatagramPacket response = new DatagramPacket(new byte[BUFFER_SIZE], BUFFER_SIZE);
         socket.receive(response);
         return new String(response.getData(), 0, response.getLength());
+    }
+
+    public static String mapAddressesToString(final List<InetAddress> connectionRequests) {
+        return connectionRequests.stream().map(inet -> inet.toString() + " ").reduce("", String::concat).trim();
     }
 }

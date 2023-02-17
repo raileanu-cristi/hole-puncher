@@ -21,7 +21,7 @@ public class Server extends DatagramServerThread implements ISendPacketToPeer {
                 final byte[] buffer = new byte[BUFFER_LEN];
                 final DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 socket.receive(request);
-                System.out.println("[Server] message received! \""+new String(request.getData(), StandardCharsets.UTF_8)+"\"");
+                System.out.println("\n[Server] message received! \""+new String(request.getData(), StandardCharsets.UTF_8)+"\"");
                 peerMessageAnalyzer.addMessage(request);
             } catch (IOException e) {
                 e.printStackTrace();
