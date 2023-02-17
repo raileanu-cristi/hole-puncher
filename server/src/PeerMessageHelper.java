@@ -19,6 +19,6 @@ public class PeerMessageHelper {
     }
 
     public static String mapAddressesToString(final List<InetAddress> connectionRequests) {
-        return connectionRequests.stream().map(inet -> inet.toString() + " ").reduce("", String::concat).trim();
+        return connectionRequests.stream().map(inet -> inet.getHostAddress() + " ").reduce("", String::concat).trim();
     }
 }
