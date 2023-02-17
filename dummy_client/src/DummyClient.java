@@ -41,12 +41,12 @@ public class DummyClient {
         } 
     }
 
-    private static void hostPeer(final DatagramSocket socket, final InetAddress address, final int port) throws IOException, InterruptedException, SecurityException  {
-        final String dataStr = registerHost(socket, address, port);
+    private static void hostPeer(final DatagramSocket socket, final InetAddress serverAddress, final int port) throws IOException, InterruptedException, SecurityException  {
+        final String dataStr = registerHost(socket, serverAddress, port);
         System.out.println(dataStr);
         TimeUnit.SECONDS.sleep(2);
-        for (int i=0; i<2; i++) {
-            final List<InetAddress> addresses = pollServer(socket, address, port);
+        for (int i=0; i<20; i++) {
+            final List<InetAddress> addresses = pollServer(socket, serverAddress, port);
 
             addresses.forEach(addr -> {
                 try {
@@ -55,16 +55,22 @@ public class DummyClient {
                     e.printStackTrace();
                 }
             });
-            sendMessage("ACK_POLL "+mapAddressesToString(addresses), socket, address, port);
+            sendMessage("ACK_POLL "+mapAddressesToString(addresses), socket, serverAddress, port);
             System.out.println("ACK_POLL sent");
             TimeUnit.SECONDS.sleep(2);
+            if (!addresses.isEmpty()) {
+                break;
+            }
         }
+        final String msg = receiveMessage(socket);
+        System.out.println(msg);
     }
 
-    private static void joiningPeer(final DatagramSocket socket, final InetAddress address, final int port, final InetAddress targeAddress) throws IOException {
-        sendMessage("CONNECT"+" "+targeAddress, socket, address, port);
-        String response = receiveMessage(socket);
+    private static void joiningPeer(final DatagramSocket socket, final InetAddress serverAddress, final int port, final InetAddress peerAddress) throws IOException {
+        sendMessage("CONNECT"+" "+peerAddress, socket, serverAddress, port);
+        final String response = receiveMessage(socket);
         System.out.println(response);
+        sendMessage("WALL_PUNCH from "+ InetAddress.getLocalHost(), socket, peerAddress, port);
     }
 
     private static void bombardPeer(final DatagramSocket socket, final InetAddress address, final int port, final int replicas) throws IOException, InterruptedException {
@@ -80,14 +86,14 @@ public class DummyClient {
         while (true) {
             final DatagramPacket response = receiveDataGram(socket);
             System.out.println(socketMessage(response));
-            sendMessage("ACK from "+socket.getLocalAddress().toString(), socket, response.getAddress(), response.getPort());
+            sendMessage("ACK from "+InetAddress.getLocalHost().toString(), socket, response.getAddress(), response.getPort());
         }
     }
 
     private static void askPeer(final DatagramSocket socket, final InetAddress address, final int port) throws IOException {
         while (true) {
             sendMessage("Hi from peer!", socket, address, port);
-            String response = receiveMessage(socket);
+            final String response = receiveMessage(socket);
             System.out.println(response);
         }
     }
