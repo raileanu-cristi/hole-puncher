@@ -67,11 +67,11 @@ public class DummyClient {
     }
 
     private static void joiningPeer(final DatagramSocket socket, final InetAddress serverAddress, final int port, final InetAddress peerAddress) throws IOException {
-        System.out.println("CONNECT " + peerAddress.toString());
-        sendMessage("CONNECT " + peerAddress.toString(), socket, serverAddress, port);
+        System.out.println("CONNECT " + peerAddress.getHostAddress());
+        sendMessage("CONNECT " + peerAddress.getHostAddress(), socket, serverAddress, port);
         final String response = receiveMessage(socket);
         System.out.println(response);
-        sendMessage("WALL_PUNCH from "+ InetAddress.getLocalHost().toString(), socket, peerAddress, port);
+        sendMessage("WALL_PUNCH from "+ InetAddress.getLocalHost().getHostAddress(), socket, peerAddress, port);
     }
 
     private static void bombardPeer(final DatagramSocket socket, final InetAddress address, final int port, final int replicas) throws IOException, InterruptedException {
@@ -87,7 +87,7 @@ public class DummyClient {
         while (true) {
             final DatagramPacket response = receiveDataGram(socket);
             System.out.println(socketMessage(response));
-            sendMessage("ACK from "+InetAddress.getLocalHost().toString(), socket, response.getAddress(), response.getPort());
+            sendMessage("ACK from "+InetAddress.getLocalHost().getHostAddress(), socket, response.getAddress(), response.getPort());
         }
     }
 
@@ -134,7 +134,7 @@ public class DummyClient {
     }
 
     public static String mapAddressesToString(final List<InetAddress> connectionRequests) {
-        return connectionRequests.stream().map(inet -> inet.toString() + " ").reduce("", String::concat).trim();
+        return connectionRequests.stream().map(inet -> inet.getHostAddress() + " ").reduce("", String::concat).trim();
     }
 
     private static DatagramPacket receiveDataGram(final DatagramSocket socket) throws IOException {

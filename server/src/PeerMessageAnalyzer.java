@@ -60,7 +60,7 @@ public class PeerMessageAnalyzer extends Thread {
             switch (firstWord) {
                 case REGISTER_MSG -> {
                     peerRepository.register(clientAddress);
-                    System.out.println("[PeerMessageAnalyzer] REGISTER peer registered with ip " + clientAddress.toString());
+                    System.out.println("[PeerMessageAnalyzer] REGISTER peer registered with ip " + clientAddress.getHostAddress());
                     sendMessageToClient("ACK_REGISTER", clientAddress, clientPort);
                 }
                 case "CONNECT" -> {
@@ -81,7 +81,7 @@ public class PeerMessageAnalyzer extends Thread {
                 case "ACK_POLL" -> {
                     System.out.println("[PeerMessageAnalyzer] ACK_POLL ");
                     for (int i = 1; i < words.length; i++) {
-                        sendMessageToClient("ACK" + " " + clientAddress.toString(), InetAddress.getByName(words[i]), clientPort);
+                        sendMessageToClient("ACK" + " " + clientAddress.getHostAddress(), InetAddress.getByName(words[i]), clientPort);
                     }
                 }
             }
@@ -91,7 +91,7 @@ public class PeerMessageAnalyzer extends Thread {
     }
 
     private void sendMessageToClient(final String message, final InetAddress address, final int port) {
-        System.out.println("[PeerMessageAnalyzer] sent message \""+message + "\" to " + address.toString() + ":" + port);
+        System.out.println("[PeerMessageAnalyzer] sent message \""+message + "\" to " + address.getHostAddress() + ":" + port);
         final DatagramPacket packetToClient = new DatagramPacket(message.getBytes(), message.length());
         packetToClient.setAddress(address);
         packetToClient.setPort(port);
