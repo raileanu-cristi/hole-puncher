@@ -29,7 +29,7 @@ public class DummyClient {
             } else if (id == 2) {
                 joiningPeer(socket, address, serverPort, targetAddress);
             } else if (id == 3) {
-                bombardPeer(socket, address, clientPort);
+                bombardPeer(socket, address, clientPort, serverPort);
             } else if (id == 4) {
                 respondPeer(socket);
             } else if (id == 5) {
@@ -67,9 +67,10 @@ public class DummyClient {
         System.out.println(response);
     }
 
-    private static void bombardPeer(final DatagramSocket socket, final InetAddress address, final int port) throws IOException, InterruptedException {
-        while (true) {
-            sendMessage("CONNECT", socket, address, port);
+    private static void bombardPeer(final DatagramSocket socket, final InetAddress address, final int port, final int replicas) throws IOException, InterruptedException {
+        for (int i=0; i<replicas; i++) {
+            System.out.println("BOMBARD");
+            sendMessage("BOMBARD", socket, address, port);
 
             TimeUnit.SECONDS.sleep(2);
         }
@@ -79,7 +80,7 @@ public class DummyClient {
         while (true) {
             final DatagramPacket response = receiveDataGram(socket);
             System.out.println(socketMessage(response));
-            sendMessage("ACK from "+socket.getInetAddress().toString(), socket, response.getAddress(), response.getPort());
+            sendMessage("ACK from "+socket.getLocalAddress().toString(), socket, response.getAddress(), response.getPort());
         }
     }
 
