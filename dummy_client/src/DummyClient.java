@@ -25,11 +25,15 @@ public class DummyClient {
             final DatagramSocket socket = new DatagramSocket(clientPort);
             final InetAddress targetAddress = InetAddress.getByName(targetHostname);
             if (id == 1) {
-                test1(socket, address, serverPort);
+                hostPeer(socket, address, serverPort);
             } else if (id == 2) {
-                test2(socket, address, serverPort, targetAddress);
+                joiningPeer(socket, address, serverPort, targetAddress);
             } else if (id == 3) {
-                test3(socket, address, serverPort);
+                bombardPeer(socket, address, clientPort);
+            } else if (id == 4) {
+                respondPeer(socket);
+            } else if (id == 5) {
+                askPeer(socket, address, clientPort);
             }
         } catch (Exception ex) {
             System.out.println("Timeout error: " + ex.getMessage());
@@ -37,7 +41,7 @@ public class DummyClient {
         } 
     }
 
-    private static void test1(final DatagramSocket socket, final InetAddress address, final int port) throws IOException, InterruptedException, SecurityException  {
+    private static void hostPeer(final DatagramSocket socket, final InetAddress address, final int port) throws IOException, InterruptedException, SecurityException  {
         final String dataStr = registerHost(socket, address, port);
         System.out.println(dataStr);
         TimeUnit.SECONDS.sleep(2);
@@ -57,17 +61,33 @@ public class DummyClient {
         }
     }
 
-    private static void test2(final DatagramSocket socket, final InetAddress address, final int port, final InetAddress targeAddress) throws IOException {
+    private static void joiningPeer(final DatagramSocket socket, final InetAddress address, final int port, final InetAddress targeAddress) throws IOException {
         sendMessage("CONNECT"+" "+targeAddress, socket, address, port);
         String response = receiveMessage(socket);
         System.out.println(response);
     }
 
-    private static void test3(final DatagramSocket socket, final InetAddress address, final int port) throws IOException, InterruptedException {
+    private static void bombardPeer(final DatagramSocket socket, final InetAddress address, final int port) throws IOException, InterruptedException {
         while (true) {
             sendMessage("CONNECT", socket, address, port);
 
             TimeUnit.SECONDS.sleep(2);
+        }
+    }
+
+    private static void respondPeer(final DatagramSocket socket) throws IOException {
+        while (true) {
+            final DatagramPacket response = receiveDataGram(socket);
+            System.out.println(socketMessage(response));
+            sendMessage("ACK from "+socket.getInetAddress().toString(), socket, response.getAddress(), response.getPort());
+        }
+    }
+
+    private static void askPeer(final DatagramSocket socket, final InetAddress address, final int port) throws IOException {
+        while (true) {
+            sendMessage("Hi from peer!", socket, address, port);
+            String response = receiveMessage(socket);
+            System.out.println(response);
         }
     }
 
@@ -102,10 +122,20 @@ public class DummyClient {
     private static String receiveMessage(final DatagramSocket socket) throws IOException {
         final DatagramPacket response = new DatagramPacket(new byte[BUFFER_SIZE], BUFFER_SIZE);
         socket.receive(response);
-        return new String(response.getData(), 0, response.getLength());
+        return socketMessage(response);
     }
 
     public static String mapAddressesToString(final List<InetAddress> connectionRequests) {
         return connectionRequests.stream().map(inet -> inet.toString() + " ").reduce("", String::concat).trim();
+    }
+
+    private static DatagramPacket receiveDataGram(final DatagramSocket socket) throws IOException {
+        final DatagramPacket response = new DatagramPacket(new byte[BUFFER_SIZE], BUFFER_SIZE);
+        socket.receive(response);
+        return response;
+    }
+
+    private static String socketMessage(final DatagramPacket response) {
+        return new String(response.getData(), 0, response.getLength());
     }
 }
