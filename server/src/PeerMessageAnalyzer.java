@@ -73,8 +73,7 @@ public class PeerMessageAnalyzer extends Thread {
                 }
                 case "POLL" -> {
                     System.out.println("[PeerMessageAnalyzer] POLL");
-                    final List<InetAddress> connectionRequests = peerRepository.getConnectionRequests(clientAddress);
-                    peerRepository.removeConnectionRequests(clientAddress);
+                    final List<InetAddress> connectionRequests = peerRepository.getAndRemoveConnectionRequests(clientAddress);
                     final String responsePoll = "POLL_RESPONSE " + PeerMessageHelper.mapAddressesToString(connectionRequests);
                     sendMessageToClient(responsePoll, clientAddress, clientPort);
                 }

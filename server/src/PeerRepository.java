@@ -32,9 +32,11 @@ public class PeerRepository {
         }
     }
 
-    public List<InetAddress> getConnectionRequests(final InetAddress address) {
+    public List<InetAddress> getAndRemoveConnectionRequests(final InetAddress address) {
         if (peerMap.containsKey(address)) {
-            return peerMap.get(address).getConnectionRequests();
+            final List<InetAddress> addresses = new ArrayList<>(peerMap.get(address).getConnectionRequests());
+            peerMap.get(address).clearConnectionRequests();
+            return addresses;
         } else {
             return new ArrayList<>();
         }
