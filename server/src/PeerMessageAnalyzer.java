@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @author criss.tmd@gmail.com
  */
 public class PeerMessageAnalyzer extends Thread {
-    private final String TEST_PEER_MSG = "TEST_PEER";
     private final Queue<DatagramPacket> msgQueue;
     private final PeerRepository peerRepository;
     private boolean isRunning;
@@ -67,7 +66,9 @@ public class PeerMessageAnalyzer extends Thread {
                 case "CONNECT" -> {
                     System.out.println("[PeerMessageAnalyzer] CONNECT ");
                     if (words.length > 1) {
-                        peerRepository.addConnectionRequest(clientAddress, InetAddress.getByName(words[1].trim()));
+                        final String hostName = words[1].trim();
+                        System.out.println("[PeerMessageAnalyzer] CONNECT to host "+hostName);
+                        peerRepository.addConnectionRequest(clientAddress, InetAddress.getByName(hostName));
                     }
                 }
                 case "POLL" -> {

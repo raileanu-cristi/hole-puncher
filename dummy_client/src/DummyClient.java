@@ -67,7 +67,8 @@ public class DummyClient {
     }
 
     private static void joiningPeer(final DatagramSocket socket, final InetAddress serverAddress, final int port, final InetAddress peerAddress) throws IOException {
-        sendMessage("CONNECT "+ peerAddress.toString(), socket, serverAddress, port);
+        System.out.println("CONNECT " + peerAddress.toString());
+        sendMessage("CONNECT " + peerAddress.toString(), socket, serverAddress, port);
         final String response = receiveMessage(socket);
         System.out.println(response);
         sendMessage("WALL_PUNCH from "+ InetAddress.getLocalHost().toString(), socket, peerAddress, port);
