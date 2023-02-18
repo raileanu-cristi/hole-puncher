@@ -22,12 +22,12 @@ public class DummyClient {
 
         try {
             final InetAddress address = InetAddress.getByName(hostname);
-            final DatagramSocket socket = new DatagramSocket(clientPort);
+            final DatagramSocket socket = new DatagramSocket(serverPort);
             final InetAddress targetAddress = InetAddress.getByName(targetHostname);
             if (id == 1) {
-                hostPeer(socket, address, serverPort);
+                hostPeer(socket, address, serverPort, clientPort);
             } else if (id == 2) {
-                joiningPeer(socket, address, serverPort, targetAddress);
+                joiningPeer(socket, address, serverPort, targetAddress, clientPort);
             } else if (id == 3) {
                 bombardPeer(socket, address, clientPort, serverPort);
             } else if (id == 4) {
@@ -41,37 +41,41 @@ public class DummyClient {
         } 
     }
 
-    private static void hostPeer(final DatagramSocket socket, final InetAddress serverAddress, final int port) throws IOException, InterruptedException, SecurityException  {
-        final String dataStr = registerHost(socket, serverAddress, port);
+    private static void hostPeer(final DatagramSocket socket, final InetAddress serverAddress, final int serverPort,
+                                 final int clientPort) throws IOException, InterruptedException, SecurityException  {
+        final String dataStr = registerHost(socket, serverAddress, serverPort);
+        final DatagramSocket peerSocket = new DatagramSocket(clientPort);
         System.out.println(dataStr);
-        TimeUnit.SECONDS.sleep(2);
         for (int i=0; i<20; i++) {
-            final List<InetAddress> addresses = pollServer(socket, serverAddress, port);
+            final List<InetAddress> addresses = pollServer(socket, serverAddress, serverPort);
 
             addresses.forEach(addr -> {
                 try {
-                    sendMessage("from host "+InetAddress.getLocalHost(), socket, addr, port);
+                    sendMessage("WALL_BREAK host "+InetAddress.getLocalHost().getHostAddress(), peerSocket, addr, clientPort);
+                    System.out.println("WALL_BREAK host sent to " + addr.getHostAddress() + " port " + clientPort);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             });
-            sendMessage("ACK_POLL "+mapAddressesToString(addresses), socket, serverAddress, port);
+            sendMessage("ACK_POLL "+mapAddressesToString(addresses), socket, serverAddress, serverPort);
             System.out.println("ACK_POLL sent");
             TimeUnit.SECONDS.sleep(2);
             if (!addresses.isEmpty()) {
                 break;
             }
         }
-        final String msg = receiveMessage(socket);
+        final String msg = receiveMessage(peerSocket);
         System.out.println(msg);
     }
 
-    private static void joiningPeer(final DatagramSocket socket, final InetAddress serverAddress, final int port, final InetAddress peerAddress) throws IOException {
+    private static void joiningPeer(final DatagramSocket socket, final InetAddress serverAddress, final int port, final InetAddress peerAddress,
+                                    final int clientPort) throws IOException {
         System.out.println("CONNECT " + peerAddress.getHostAddress());
         sendMessage("CONNECT " + peerAddress.getHostAddress(), socket, serverAddress, port);
         final String response = receiveMessage(socket);
         System.out.println(response);
-        sendMessage("WALL_PUNCH from "+ InetAddress.getLocalHost().getHostAddress(), socket, peerAddress, port);
+        final DatagramSocket peerSocket = new DatagramSocket(clientPort);
+        sendMessage("WALL_PUNCH from "+ InetAddress.getLocalHost().getHostAddress(), peerSocket, peerAddress, clientPort);
     }
 
     private static void bombardPeer(final DatagramSocket socket, final InetAddress address, final int port, final int replicas) throws IOException, InterruptedException {
@@ -104,9 +108,12 @@ public class DummyClient {
         final String pollResponse = receiveMessage(socket);
         System.out.println("POLL response= "+pollResponse);
         final String[] responseSplit = pollResponse.split(" ");
-        final List<String> addresStr = Arrays.asList(responseSplit).subList(1, responseSplit.length);
-        return addresStr
+        final List<String> addressStrings = Arrays.asList(responseSplit).subList(1, responseSplit.length);
+        System.out.println(addressStrings);
+        return addressStrings
                 .stream()
+                .map(String::trim)
+                .filter(word -> !word.isEmpty())
                 .map(word -> {
                     try {
                         return InetAddress.getByName(word);
