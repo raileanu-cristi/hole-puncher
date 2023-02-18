@@ -67,6 +67,7 @@ public class DummyClient {
         final DatagramPacket msg = receiveDataGram(peerSocket);
         System.out.println(datagramMessage(msg));
         sendMessage("Hello joiner" + msg.getAddress().getHostAddress(), peerSocket, msg.getAddress(), clientPort);
+        System.out.println("Hello joiner sent");
     }
 
     private static void joiningPeer(final DatagramSocket socket, final InetAddress serverAddress, final int port, final InetAddress peerAddress,
@@ -77,7 +78,7 @@ public class DummyClient {
         System.out.println(response);
         final DatagramSocket peerSocket = new DatagramSocket(clientPort);
         sendMessage("WALL_PUNCH from "+ InetAddress.getLocalHost().getHostAddress(), peerSocket, peerAddress, clientPort);
-        final String lastResponse = receiveMessage(socket);
+        final String lastResponse = receiveMessage(peerSocket);
         System.out.println(lastResponse);
     }
 
