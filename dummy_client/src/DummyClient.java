@@ -64,8 +64,9 @@ public class DummyClient {
                 break;
             }
         }
-        final String msg = receiveMessage(peerSocket);
-        System.out.println(msg);
+        final DatagramPacket msg = receiveDataGram(peerSocket);
+        System.out.println(datagramMessage(msg));
+        sendMessage("Hello joiner" + msg.getAddress().getHostAddress(), peerSocket, msg.getAddress(), clientPort);
     }
 
     private static void joiningPeer(final DatagramSocket socket, final InetAddress serverAddress, final int port, final InetAddress peerAddress,
@@ -76,6 +77,8 @@ public class DummyClient {
         System.out.println(response);
         final DatagramSocket peerSocket = new DatagramSocket(clientPort);
         sendMessage("WALL_PUNCH from "+ InetAddress.getLocalHost().getHostAddress(), peerSocket, peerAddress, clientPort);
+        final String lastResponse = receiveMessage(socket);
+        System.out.println(lastResponse);
     }
 
     private static void bombardPeer(final DatagramSocket socket, final InetAddress address, final int port, final int replicas) throws IOException, InterruptedException {
@@ -90,7 +93,7 @@ public class DummyClient {
     private static void respondPeer(final DatagramSocket socket) throws IOException {
         while (true) {
             final DatagramPacket response = receiveDataGram(socket);
-            System.out.println(socketMessage(response));
+            System.out.println(datagramMessage(response));
             sendMessage("ACK from "+InetAddress.getLocalHost().getHostAddress(), socket, response.getAddress(), response.getPort());
         }
     }
@@ -137,7 +140,7 @@ public class DummyClient {
     private static String receiveMessage(final DatagramSocket socket) throws IOException {
         final DatagramPacket response = new DatagramPacket(new byte[BUFFER_SIZE], BUFFER_SIZE);
         socket.receive(response);
-        return socketMessage(response);
+        return datagramMessage(response);
     }
 
     public static String mapAddressesToString(final List<InetAddress> connectionRequests) {
@@ -150,7 +153,7 @@ public class DummyClient {
         return response;
     }
 
-    private static String socketMessage(final DatagramPacket response) {
+    private static String datagramMessage(final DatagramPacket response) {
         return new String(response.getData(), 0, response.getLength());
     }
 }
