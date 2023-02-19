@@ -1,7 +1,6 @@
 import java.io.IOException;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 public class Server extends DatagramServerThread implements ISendPacketToPeer {
     final static int BUFFER_LEN = HolePuncher.BUFFER_LEN;
@@ -33,7 +32,6 @@ public class Server extends DatagramServerThread implements ISendPacketToPeer {
     public void sendPacketToPeer(final DatagramPacket packet) {
         try {
             socket.send(packet);
-            System.out.println("[Server] message sent "+ Arrays.toString(packet.getData()));
         } catch (IOException e) {
             e.printStackTrace();
         }
