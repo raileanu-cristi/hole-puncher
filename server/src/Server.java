@@ -10,7 +10,7 @@ public class Server extends DatagramServerThread implements ISendPacketToPeer {
     public Server(final int port) throws SocketException {
         super(port);
         peerMessageAnalyzer = new PeerMessageAnalyzer(this);
-        peerMessageAnalyzer.start();
+//        peerMessageAnalyzer.start();
     }
 
     @Override
