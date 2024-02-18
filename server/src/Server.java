@@ -5,8 +5,11 @@ import java.nio.charset.StandardCharsets;
 public class Server extends DatagramServerThread implements ISendPacketToPeer {
     final static int BUFFER_LEN = HolePuncher.BUFFER_LEN;
 
+    private final PeerRepository peerRepository;
+
     public Server(final int port) throws SocketException {
         super(port);
+        this.peerRepository = new PeerRepository();
     }
 
     @Override
@@ -17,8 +20,8 @@ public class Server extends DatagramServerThread implements ISendPacketToPeer {
                 final DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 socket.receive(request);
                 System.out.println("\n[Server] message received! \""+new String(request.getData(), StandardCharsets.UTF_8)+"\"");
-                final PeerMessageAnalyzer requestHandler = new PeerMessageAnalyzer(this, request);
-                requestHandler.start();
+                final PeerMessageAnalyzer session = new PeerMessageAnalyzer(this, peerRepository, request);
+                session.start();
             } catch (IOException e) {
                 System.out.println(e.getMessage());
             }

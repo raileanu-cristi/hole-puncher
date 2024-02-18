@@ -13,12 +13,11 @@ public class PeerMessageAnalyzer extends Thread {
     private static final  String REGISTER_MSG = "REGISTER";
     private final PeerRepository peerRepository;
     private final ISendPacketToPeer peerSender;
+    private final DatagramPacket packet;
 
-    final DatagramPacket packet;
-
-    public PeerMessageAnalyzer(final ISendPacketToPeer peerSender, final DatagramPacket packet) {
+    public PeerMessageAnalyzer(final ISendPacketToPeer peerSender, final PeerRepository peerRepository, final DatagramPacket packet) {
         this.peerSender = peerSender;
-        this.peerRepository = new PeerRepository();
+        this.peerRepository = peerRepository;
         this.packet = packet;
     }
 
