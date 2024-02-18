@@ -3,8 +3,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * This program demonstrates how to implement PeerMessageAnalyzer
@@ -12,33 +10,21 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @author criss.tmd@gmail.com
  */
 public class PeerMessageAnalyzer extends Thread {
-    private final Queue<DatagramPacket> msgQueue;
-    private final PeerRepository peerRepository;
-    private boolean isRunning;
-    private final ISendPacketToPeer peerSender;
     private static final  String REGISTER_MSG = "REGISTER";
+    private final PeerRepository peerRepository;
+    private final ISendPacketToPeer peerSender;
 
-    public PeerMessageAnalyzer(ISendPacketToPeer peerSender) {
-        isRunning = true;
+    final DatagramPacket packet;
+
+    public PeerMessageAnalyzer(final ISendPacketToPeer peerSender, final DatagramPacket packet) {
         this.peerSender = peerSender;
-        this.msgQueue = new ConcurrentLinkedQueue<>();
         this.peerRepository = new PeerRepository();
+        this.packet = packet;
     }
 
+    @Override
     public void run() {
-        while (isRunning) {
-            if (!msgQueue.isEmpty()) {
-                processMessage(msgQueue.poll());
-            }
-        }
-    }
-
-    public void stopRunning() {
-        isRunning = false;
-    }
-
-    public void addMessage(final DatagramPacket message) {
-        msgQueue.add(message);
+        processMessage(packet);
     }
 
     private void processMessage(final DatagramPacket packet) {
